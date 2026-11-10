@@ -1,22 +1,24 @@
 @echo off
 REM ============================================================
-REM  构建脚本：只在当前窗口临时锁定 JDK 21，不改系统环境变量
-REM  用法:
+REM  Build script: locks JDK 21 for this window only.
+REM  Usage:
 REM     build.cmd clean package
 REM     build.cmd spring-boot:run
-REM  说明:
-REM     - 若 D:\java\jdk-21 不存在，会退回系统默认 JDK
-REM     - Maven 找不到时，请在 IDEA 里用自带的 Maven 窗口构建
+REM  Note: keep this file ASCII-only. cmd.exe reads .cmd files
+REM        with the system ANSI code page; Chinese text here
+REM        would be garbled and executed as commands.
 REM ============================================================
 setlocal
+chcp 65001 >nul 2>nul
 
 if exist "D:\java\jdk-21\bin\java.exe" (
     set "JAVA_HOME=D:\java\jdk-21"
     set "PATH=D:\java\jdk-21\bin;%PATH%"
-    echo [build] JAVA_HOME=%JAVA_HOME%
 ) else (
-    echo [build] 警告: 未找到 D:\java\jdk-21，使用系统默认 JDK
+    echo [build] WARN: JDK 21 not found at D:\java\jdk-21, using default JDK
 )
+
+echo [build] JAVA_HOME=%JAVA_HOME%
 
 set "MVN_CMD="
 if exist "D:\tools\apache-maven-3.9.9\bin\mvn.cmd" (
@@ -26,11 +28,10 @@ if exist "D:\tools\apache-maven-3.9.9\bin\mvn.cmd" (
 )
 
 if "%MVN_CMD%"=="" (
-    echo [build] 错误: 未找到 Maven，请先安装或使用 IDEA 自带 Maven
+    echo [build] ERROR: Maven not found. Install Maven or build in IDEA.
     exit /b 1
 )
 
-REM 统一在 backend 目录执行
 pushd "%~dp0backend"
 call "%MVN_CMD%" %*
 set "EXIT_CODE=%ERRORLEVEL%"
